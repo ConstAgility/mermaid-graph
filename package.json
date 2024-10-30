@@ -1,6 +1,6 @@
 {
   "name": "mermaid-graph",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A React component library for rendering mermaid graphs with customizable interactions",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -23,7 +23,7 @@
     "component-library"
   ],
   "author": "Hammad Naveed",
-  "license": "ISC",
+  "license": "MIT",
   "peerDependencies": {
     "react": "^17.0.0 || ^18.0.0",
     "react-dom": "^17.0.0 || ^18.0.0"

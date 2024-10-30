@@ -134,8 +134,8 @@ const MermaidGraph: React.FC<MermaidGraphProps> = ({
         justifyContent: "center",
         alignItems: "center",
         width: "100%",
-        height: "100vh",
-        transform: "scale(1.5)",
+        height: "100%",
+     
       }}
     />
   );
