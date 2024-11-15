@@ -20,48 +20,89 @@ const MermaidGraph: React.FC<MermaidGraphProps> = ({
     let styledGraphCode = graphCode;
     let currentLinkIndex = 0;
     const linkSequence: string[] = [];
+    const startNodes = new Set<string>();
+    const decisionNodes = new Set<string>();
+    const endingNodes = new Set<string>();
 
-    // Assign indices to each link in the Mermaid graph
+    // Assign indices to each link in the Mermaid graph and categorize nodes
     graphCode.split("\n").forEach((line) => {
       const match = line.match(/([^\s]+)\s*-->\|([^\|]+)\|\s*([^\s]+)/);
       if (match) {
         const fromNode = match[1].replace(/\(\(.+\)\)/, ""); // Remove extra parentheses
-        const label = match[2]; // This is the link label, e.g., "0a"
         const toNode = match[3].replace(/\(\(.+\)\)/, ""); // Remove extra parentheses
-        const linkKey = `${fromNode}->${label}->${toNode}`;
+
+        // Categorize nodes based on their prefixes
+        if (fromNode.startsWith("S")) startNodes.add(fromNode); // Starting nodes
+        if (fromNode.startsWith("D")) decisionNodes.add(fromNode); // Decision nodes
+        if (toNode.startsWith("E")) endingNodes.add(toNode); // Ending nodes
+
+        const linkKey = `${fromNode}->${match[2]}->${toNode}`;
         linkSequence.push(linkKey);
         currentLinkIndex += 1;
       }
     });
 
-    // Process each path and apply styling
+    // Apply styling to nodes based on their categories
+    startNodes.forEach((node) => {
+      styledGraphCode += `
+        class ${node} start;
+      `;
+    });
+
+    decisionNodes.forEach((node) => {
+      styledGraphCode += `
+        class ${node} decision;
+      `;
+    });
+
+    endingNodes.forEach((node) => {
+      styledGraphCode += `
+        class ${node} ending;
+      `;
+    });
+
+    // Add styles for each class
+    styledGraphCode += `
+      classDef start fill:#a8e6cf,stroke:#2b7a4b,stroke-width:2px;
+      classDef decision fill:#d0e8f2,stroke:#4682b4,stroke-width:2px;
+      classDef ending fill:#f9a,stroke:#333,stroke-width:2px;
+    `;
+
+    // Process each path and apply styling'
+    const nodeStrokeColor = "#3366FF";
     paths.forEach((path) => {
       const steps = path.split(" -> ");
-      const color = "#00FF00"; // Green for nodes
-      const edgeColor = "#0000FF"; // Blue for edges
+      const edgeColor = "#3366FF"; // Blue for edges
+      // Blue for node outlines
+
       for (let i = 0; i < steps.length - 2; i += 2) {
         const fromNode = steps[i];
         const label = steps[i + 1];
         const toNode = steps[i + 2];
-        // Apply styles to the nodes
+
+        // Apply styles to the nodes in the path
         styledGraphCode += `
-          style ${fromNode} fill:${color},stroke:#000000,stroke-width:2px;
-          style ${toNode} fill:${color},stroke:#000000,stroke-width:2px;
-        `;
-        // Create the linkKey and try to find it
+      class ${fromNode} highlightedNode;
+      class ${toNode} highlightedNode;
+    `;
+
+        // Find and style the edge
         const linkKey = `${fromNode}->${label}->${toNode}`;
         const linkIndex = linkSequence.findIndex((link) => link === linkKey);
-        // Apply the link style if we find the index
         if (linkIndex !== -1) {
           styledGraphCode += `
-            linkStyle ${linkIndex} stroke:${edgeColor},stroke-width:2px;
-          `;
+        linkStyle ${linkIndex} stroke:${edgeColor},stroke-width:5px;
+      `;
         }
       }
     });
+
+    // Define the class for highlighted nodes
+    styledGraphCode += `
+  classDef highlightedNode stroke:${nodeStrokeColor},stroke-width:5px;
+`;
     return styledGraphCode;
   };
- 
 
   useEffect(() => {
     setIsClient(true); // Set to true only when the component is mounted in the browser
@@ -135,7 +176,6 @@ const MermaidGraph: React.FC<MermaidGraphProps> = ({
         alignItems: "center",
         width: "100%",
         height: "100%",
-     
       }}
     />
   );
